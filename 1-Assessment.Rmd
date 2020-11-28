@@ -1,0 +1,236 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+Question 1
+
+Which of the following is NOT part of the data wrangling process?
+
+```{r}
+# Checking correlations between your variables
+
+# Data analyses, such as checking correlations or creating visualizations, are done AFTER the data has been processed into a tidy format
+```
+
+Question 2
+
+Which files could be opened in a basic text editor?
+
+```{r}
+# data.txt, data.csv, data.tsv
+
+# .txt, .csv, and .tsv files can all be opened by any basic text editor. Microsoft Excel files (.xlsx) use a proprietary format that can't be viewed with a basic text editor
+```
+
+Question 3
+
+You want to analyze a file containing race finish times for a recent marathon. You open the file in a basic text editor and see lines that look like the following:
+
+initials,state,age,time
+vib,MA,61,6:01
+adc,TX,45,5:45
+kme,CT,50,4:19
+What type of file is this?
+
+```{r}
+# A comma-delimited file with a header
+
+# This file has a header that describes the contents of each column. Values are separated by commas
+```
+
+Question 4
+
+Assume the following is the full path to the directory that a student wants to use as their working directory in R: "/Users/student/Documents/projects/"
+
+Which of the following lines of code CANNOT set the working directory to the desired "projects" directory?
+
+```{r}
+# setwd(/Users/student/Documents/projects/)
+
+# Correct: this code will not work. You need to use quotation marks when providing a full path to the working directory
+
+# Working commands
+#1 setwd("~/Documents/projects/")
+#2 setwd("/Users/student/Documents/projects/")
+#3-1 dir <- "/Users/student/Documents/projects"
+#3-2 setwd(dir)
+```
+
+Question 5
+
+We want to copy the "murders.csv" file from the dslabs package into an existing folder "data", which is located in our HarvardX-Wrangling projects folder. We first enter the code below into our RStudio console.
+
+> getwd()
+[1] "C:/Users/UNIVERSITY/Documents/Analyses/HarvardX-Wrangling"
+> filename <- "murders.csv"
+> path <- system.file("extdata", package = "dslabs")
+Which of the following commands would NOT successfully copy “murders.csv” into the folder “data”?
+
+```{r}
+# file.copy(file.path(path, "murders.csv"), getwd())
+
+# This command does NOT copy the “murders.csv” file into your “data” folder; instead it copies it into the parent directory, “HarvardX-Wrangling”. You need to specify the “data” folder, either by changing the working directory or by adding it to the file path
+
+# Working commands
+#1-1 setwd("data")
+#1-2 file.copy(file.path(path, filename), getwd())
+
+#2 file.copy(file.path(path, "murders.csv"), file.path(getwd(), "data"))
+
+#3-1 file.location <- file.path(system.file("extdata", package = "dslabs"), "murders.csv")
+#3-2 file.destination <- file.path(getwd(), "data")
+#3-3 file.copy(file.location, file.destination) 
+```
+
+Question 6
+
+You are not sure whether the murders.csv file has a header row. How could you check this?
+
+```{r}
+# Open the file in a basic text editor
+# In the RStudio “Files” pane, click on your file, then select “View File”
+# Use the command read_lines (remembering to specify the number of rows with the n_max argument)
+```
+
+Question 7
+
+What is one difference between read_excel() and read_xlsx()?
+
+```{r}
+# read_excel() reads both .xls and .xlsx files by detecting the file format from its extension, while read_xlsx() only reads .xlsx files
+
+# You can use read_excel for both .xls and .xlsx files, while read_xlsx only reads .xlsx files
+```
+
+Question 8
+
+You have a file called “times.txt” that contains race finish times for a marathon. The first four lines of the file look like this:
+
+initials,state,age,time
+vib,MA,61,6:01
+adc,TX,45,5:45
+kme,CT,50,4:19
+Which line of code will NOT produce a tibble with column names “initials”, “state”, “age”, and “time”?
+
+```{r}
+# race_times <- read.csv("times.txt")
+
+# This code will import the comma-separated values table called “times.txt”, but the base R function read.csv does not produce a tibble. It creates a data frame
+```
+
+Question 9
+
+You also have access to marathon finish times in the form of an Excel document named “times.xlsx”. In the Excel document, different sheets contain race information for different years. The first sheet is named “2015”, the second is named “2016”, and the third is named “2017”.
+
+Which line of code will NOT import the data contained in the “2016” tab of this Excel sheet?
+
+```{r}
+# times_2016 <- read_xlsx("times.xlsx", sheet = “2”)
+
+# When the sheet argument is contained within quotes, the function expects a sheet name. There is no sheet named “2” in this spreadsheet, so the code will not work
+```
+
+Question 10
+
+You have a comma-separated values file that contains the initials, home states, ages, and race finish times for marathon runners. The runners’ initials contain three characters for the runners’ first, middle, and last names (for example, “KME”).
+
+You read in the file using the following code.
+
+      
+race_times <- read.csv(“times.csv”)
+
+    
+What is the data type of the initials in the object race_times?
+
+```{r}
+# factors
+
+# If you don’t supply the argument stringsAsFactors = F, the read.csv function will automatically convert characters to factors
+```
+
+Question 11
+
+Which of the following is NOT a real difference between the readr import functions and the base R import functions?
+
+```{r}
+# The base R import functions can read .csv files, but cannot read files with other delimiters, such as .tsv files, or fixed-width files
+
+# This statement is false. The base R import functions can read files with other delimiters like .tsv using read.delim and can read fixed-width files using read.fwf
+```
+
+Question 12
+
+You read in a file containing runner information and marathon finish times using the following code.
+
+      
+race_times <- read.csv(“times.csv”, stringsAsFactors = F)
+
+    
+What is the class of the object race_times?
+
+```{r}
+# data frame
+
+# The read.csv function generates a data frame containing these data
+```
+
+Question 13
+
+Select the answer choice that summarizes all of the actions that the following lines of code can perform. Please note that the url below is an example and does not lead to data.
+
+      
+url <- "https://raw.githubusercontent.com/MyUserName/MyProject/master/MyData.csv "
+dat <- read_csv(url)
+download.file(url, "MyData.csv")
+
+```{r}
+# Create a tibble in R called dat that contains the information contained in the csv file stored on Github. Download the csv file to the working directory and name the downloaded file “MyData.csv”
+
+# The read_csv command creates the tibble in R and the download.file command downloads the csv file from the internet to the working directory with the specified name
+```
+
+Question 14
+
+Inspect the file at the following URL:
+
+https://raw.githubusercontent.com/rasbt/python-machine-learning-book/master/code/datasets/wdbc/wdbc.data
+Which readr function should be used to import this file?
+
+```{r}
+library(tidyverse)
+
+# read_csv()
+
+# Correct - this is a comma-separated value file
+```
+
+Question 15
+
+Check the documentation for the readr function you chose in the previous question to learn about its arguments. Determine which arguments you need to the file from the previous question:
+
+url <- "https://raw.githubusercontent.com/rasbt/python-machine-learning-book/master/code/datasets/wdbc/wdbc.data"
+
+Does this file have a header row? Does the readr function you chose need any additional arguments to import the data correctly?
+
+```{r}
+# No, there is no header. The col_names=FALSE argument is necessary.
+
+# There are no variable names in the first row, and the correct argument to skip the header in readr is col_names=FALSE
+
+url <- "https://raw.githubusercontent.com/rasbt/python-machine-learning-book/master/code/datasets/wdbc/wdbc.data"
+
+dat <- read_csv(url,col_names = FALSE)
+head(dat)
+```
+Question 16
+
+Inspect the imported data from the previous question.
+
+How many rows are in the dataset?
+How many columns are in the dataset?
+
+```{r}
+dim(dat)
+```
+

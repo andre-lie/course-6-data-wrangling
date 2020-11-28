@@ -1,0 +1,167 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(rvest)
+library(dslabs)
+```
+
+
+Question 2
+You have the following table, schedule:
+
+>schedule
+day		staff
+Monday		Mandy, Chris and Laura
+Tuesday		Steve, Ruth and Frank
+You want to turn this into a more useful data frame.
+
+Which two commands would properly split the text in the “staff” column into each individual name? Select ALL that apply
+
+```{r}
+day <- c("Monday","Tuesday")
+staff <- c("Mandy, Chris and Laura","Steve, Ruth and Frank")
+schedule <- data.frame(day=day,staff=staff)
+
+str_split(schedule$staff, ",\\s|\\sand\\s")
+str_split(schedule$staff, ", | and ")
+
+# This regex will correctly split each “staff” string into three names by properly accounting for the space after the comma as well as the spaces before and after the “and”, but it’s not the only one.
+
+# This regex command is the same as the one above, except that the spaces are written as \\s, but it’s not the only one
+```
+
+Question 3
+You have the following table, schedule:
+
+> schedule
+day         staff
+Monday   	Mandy, Chris and Laura
+Tuesday 	Steve, Ruth and Frank
+What code would successfully turn your “Schedule” table into the following tidy table?
+
+> tidy
+day     staff
+<chr>   <chr>
+Monday  Mandy
+Monday  Chris
+Monday  Laura
+Tuesday Steve
+Tuesday Ruth 
+Tuesday Frank
+
+```{r}
+tidy <- schedule %>%
+  mutate(staff=str_split(staff,", | and ")) %>%
+  unnest()
+tidy
+
+# The mutate command creates a column “staff”. Each row in the “staff” column is a character vector of length three, with the names of each staff member. We unnest this character vector using the unnest() function from tidyr
+```
+
+Question 4
+
+Using the gapminder data, you want to recode countries longer than 12 letters in the region “Middle Africa” to their abbreviations in a new column, “country_short”. Which code would accomplish this?
+
+```{r}
+dat <- gapminder %>% filter(region=="Middle Africa") %>%
+  mutate(country_short = recode(country,
+                                "Central African Republic"="CAR",
+                                "Congo, Dem. Rep."="DRC",
+                                "Equatorial Guinea"="Eq. Guinea"))
+dat
+
+# This code properly recodes each country in a new column “country_short”
+```
+
+Import raw Brexit referendum polling data from Wikipedia:
+
+```{r}
+url <- "https://en.wikipedia.org/w/index.php?title=Opinion_polling_for_the_United_Kingdom_European_Union_membership_referendum&oldid=896735054"
+tab <- read_html(url) %>% html_nodes("table")
+polls_raw <- tab[[5]] %>% html_table(fill = TRUE)
+polls_raw
+```
+
+Question 5
+
+Some rows in this table do not contain polls. You can identify these by the lack of the percent sign (%) in the Remain column.
+
+Update polls by changing the column names to c("dates", "remain", "leave", "undecided", "lead", "samplesize", "pollster", "poll_type", "notes") and only keeping rows that have a percent sign (%) in the remain column.
+
+How many rows remain in the polls data frame?
+
+```{r}
+col_names <- c("dates", "remain", "leave", "undecided", "lead", "samplesize", "pollster", "poll_type", "notes")
+polls_raw <- polls_raw %>% setNames(col_names)
+polls_raw
+percent_sign <- str_detect(polls_raw$remain,"%")
+percent_sign
+sum(percent_sign)
+polls_raw %>% filter(percent_sign)
+```
+
+```{r}
+polls_raw2 <- polls_raw
+names(polls_raw2) <- c("dates", "remain", "leave", "undecided", "lead", "samplesize", "pollster", "poll_type", "notes")
+polls <- polls_raw2[str_detect(polls_raw2$remain, "%"), -9]
+nrow(polls)
+```
+
+Question 6
+
+The remain and leave columns are both given in the format "48.1%": percentages out of 100% with a percent symbol.
+
+Which of these commands converts the remain vector to a proportion between 0 and 1?
+
+```{r}
+as.numeric(str_replace(polls$remain, "%", ""))/100
+```
+
+```{r}
+parse_number(polls$remain)/100
+```
+
+Question 7
+
+The undecided column has some "N/A" values. These "N/A"s are only present when the remain and leave columns total 100%, so they should actually be zeros.
+
+Use a function from stringr to convert "N/A" in the undecided column to 0. The format of your command should be function_name(polls$undecided, "arg1", "arg2").
+
+What function replaces function_name?
+
+```{r}
+str_replace(polls$undecided,"N/A","0")
+```
+
+Question 8
+
+The dates column contains the range of dates over which the poll was conducted. The format is "8-10 Jan" where the poll had a start date of 2016-01-08 and end date of 2016-01-10. Some polls go across month boundaries (16 May-12 June).
+
+The end date of the poll will always be one or two digits, followed by a space, followed by the month as one or more letters (either capital or lowercase). In these data, all month abbreviations or names have 3, 4 or 5 letters.
+
+Write a regular expression to extract the end day and month from dates. Insert it into the skeleton code below:
+
+```{r}
+temp <- str_extract_all(polls$dates,"\\d+\\s[a-zA-Z]+")
+temp
+end_date <- sapply(temp, function(x) x[length(x)]) # take last element (handles polls that cross month boundaries)
+
+```
+
+```{r}
+# Also correct answers:
+str_extract_all(polls$dates,"[0-9]+\\s[a-zA-Z]+")
+```
+
+```{r}
+str_extract_all(polls$dates,"\\d{1,2}\\s[a-zA-Z]+")
+```
+
+```{r}
+str_extract_all(polls$dates,"\\d+\\s[a-zA-Z]{3,5}")
+```
+

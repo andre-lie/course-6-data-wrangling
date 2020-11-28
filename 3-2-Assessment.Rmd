@@ -1,0 +1,235 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+Question 1
+
+In the video, we use the function not_inches to identify heights that were incorrectly entered
+
+not_inches <- function(x, smallest = 50, tallest = 84) {
+  inches <- suppressWarnings(as.numeric(x))
+  ind <- is.na(inches) | inches < smallest | inches > tallest 
+  ind
+}
+
+In this function, what TWO types of values are identified as not being correctly formatted in inches?
+
+```{r}
+# Values that result in NA’s when converted to numeric
+# Values less than 50 inches or greater than 84 inches
+```
+
+Question 2
+
+Which of the following arguments, when passed to the function not_inches(), would return the vector c(FALSE)?
+
+```{r}
+# c(70)
+
+# The entry 70 can be converted to a numeric entry by as.numeric and is within the range that we set. Therefore, the result of this function would be FALSE (i.e., our entry is correctly formatted in inches)
+```
+
+Question 3
+
+Our function not_inches() returns the object ind. Which answer correctly describes ind?
+
+```{r}
+# ind is a logical vector of TRUE and FALSE, equal in length to the vector x (in the arguments list). TRUE indicates that a height entry is incorrectly formatted
+
+# Our function returns a logical vector, with TRUE indicating that a height entry is incorrectly formatted and FALSE indicating that a height entry is formatted properly in inches. We then use this logical vector to filter our raw_heights data to only show incorrectly formatted entries
+```
+
+Question 4
+
+Given the following code
+
+> s
+[1] "70"       "5 ft"     "4'11"     ""         "."        "Six feet"
+    
+What pattern vector yields the following result?
+
+str_view_all(s, pattern)
+70
+5 ft
+4’11
+.
+Six feet
+
+```{r}
+library(tidyverse)
+library(stringr)
+library(htmlwidgets)
+s <- c("70","5 ft","4'11","",".","Six feet")
+
+# This regex identifies any numeric characters or the text “ft”
+pattern <- "\\d|ft" 
+
+str_view_all(s, pattern)
+
+```
+
+Question 5
+
+You enter the following set of commands into your R console. What is your printed result?
+
+```{r}
+animals <- c("cat", "puppy", "Moose", "MONKEY")
+pattern <- "[a-z]"
+str_detect(animals, pattern)
+
+# While your first three strings have at least one lowercase letter [a-z], the string MONKEY does not have any lowercase letters and will return a FALSE
+```
+Question 6
+
+You enter the following set of commands into your R console. What is your printed result?
+
+```{r}
+animals <- c("cat", "puppy", "Moose", "MONKEY")
+pattern <- "[A-Z]$"
+str_detect(animals, pattern)
+
+# Your regex pattern tells str_detect to look for an uppercase ([A-Z]) letter at the end of the string ($): this is only true for the string “MONKEY”
+```
+Question 7
+
+You enter the following set of commands into your R console. What is your printed result?
+
+```{r}
+animals <- c("cat", "puppy", "Moose", "MONKEY")
+pattern <- "[a-z]{4,5}"
+str_detect(animals, pattern)
+
+# Your regex command tells R to look for either 4 or 5 lowercase letters in a row anywhere in the string. This is true for the animals “puppy” and “Moose”
+```
+
+Question 8
+
+Given the following code:
+
+animals <- c("moose", "monkey", "meerkat", "mountain lion")
+
+Which TWO “pattern” vectors would yield the following result?
+
+> str_detect(animals, pattern)
+[1] TRUE TRUE TRUE TRUE
+
+```{r}
+animals <- c("moose", "monkey", "meerkat", "mountain lion")
+pattern1 <- "mo*"
+pattern2 <- "mo?"
+str_detect(animals, pattern1)
+str_detect(animals, pattern2)
+
+# This regex pattern looks for an “m” followed by zero or more “o” characters. This is true for all strings in the animal vector.
+
+# This regex pattern looks for an “m” followed by zero or one “o” characters. This is true for all strings in the animal vector. Even though “moose” has two “o”s after the “m”, it still matches the pattern
+```
+
+Question 9
+
+You are working on some data from different universities. You have the following vector:
+
+```{r}
+schools <- c("U. Kentucky","Univ New Hampshire","Univ. of Massachusetts","University Georgia","U California","California State University") 
+
+schools %>% 
+    str_replace("^Univ\\.?\\s|^U\\.?\\s", "University ") %>% 
+    str_replace("^University of |^University ", "University of ")
+
+# This code properly replaces all versions of “U”, “U.”, “Univ” and “Univ.” with “University” and then adds the word “of
+```
+
+Question 10
+
+Rather than using the pattern_with_groups vector from the video, you accidentally write in the following code:
+
+```{r}
+problems <- c("5.3", "5,5", "6 1", "5 .11", "5, 12")
+pattern_with_groups <- "^([4-7])[,\\.](\\d*)$"
+str_replace(problems, pattern_with_groups, "\\1'\\2")
+
+# Yes. You forgot to check for any spaces in your regex pattern. While the first two entries of “problems” have commas and periods correctly replaced, the last three entries are not identified as part of the pattern and are not replaced
+```
+
+Question 11
+
+You notice your mistake and correct your pattern regex to the following
+
+```{r}
+problems <- c("5.3", "5,5", "6 1", "5 .11", "5, 12")
+pattern_with_groups <- "^([4-7])[,\\.\\s](\\d*)$"
+str_replace(problems, pattern_with_groups, "\\1'\\2")
+
+# The new regex pattern now checks for one character, either a comma, period or space, between the first digit and the last one or two digits, and replaces it with an apostrophe (‘). However, because your last two problem strings have additional space between the digits, they are not corrected
+```
+
+Question 12
+
+In our example, we use the following code to detect height entries that do not match our pattern of x’y”:
+
+```{r}
+library(dslabs)
+data("reported_heights")
+
+not_inches_or_cm <- function(x, smallest=50, tallest=84){
+  inches <- suppressWarnings(as.numeric(x))
+  ind <- !is.na(inches) &
+    ((inches >= smallest & inches <= tallest) |
+       (inches/2.54 >= smallest & inches/2.54 <= tallest))
+  !ind
+}
+
+problems <- reported_heights %>%
+  filter(not_inches_or_cm(height)) %>%
+  .$height
+
+converted <- problems %>% 
+  str_replace("feet|foot|ft", "'") %>% 
+  str_replace("inches|in|''|\"", "") %>% 
+  str_replace("^([4-7])\\s*[,\\.\\s+]\\s*(\\d*)$", "\\1'\\2")
+
+pattern <- "^[4-7]\\s*'\\s*\\d{1,2}$"
+index <- str_detect(converted, pattern)
+converted[!index]
+```
+    
+Which answer best describes the differences between the regex string we use as an argument in str_replace("^([4-7])\\s*[,\\.\\s+]\\s*(\\d*)$", "\\1'\\2") and the regex string in pattern <- "^[4-7]\\s*'\\s*\\d{1,2}$"?
+
+```{r}
+# The regex used in str_replace() looks for either a comma, period or space between the feet and inches digits, while the pattern regex just looks for an apostrophe; the regex in str_replace allows for none or more digits to be entered as inches, while the pattern regex only allows for one or two digits
+
+# This answer describes two important differences in the str_replace() regex and the pattern regex
+```
+
+Question 13
+
+You notice a few entries that are not being properly converted using your str_replace() and str_detect() code:
+
+```{r}
+yes <- c("5 feet 7inches", "5 7")
+no <- c("5ft 9 inches", "5 ft 9 inches")
+s <- c(yes, no)
+
+converted <- s %>% 
+  str_replace("feet|foot|ft", "'") %>% 
+  str_replace("inches|in|''|\"", "") %>% 
+  str_replace("^([4-7])\\s*[,\\.\\s+]\\s*(\\d*)$", "\\1'\\2")
+
+pattern <- "^[4-7]\\s*'\\s*\\d{1,2}$"
+str_detect(converted, pattern)
+```
+It seems like the problem may be due to spaces around the words feet|foot|ft and inches|in. What is another way you could fix this problem?
+
+```{r}
+converted <- s %>% 
+    str_replace("\\s*(feet|foot|ft)\\s*", "'") %>% 
+    str_replace("\\s*(inches|in|''|\")\\s*", "") %>% 
+    str_replace("^([4-7])\\s*[,\\.\\s+]\\s*(\\d*)$", "\\1'\\2")
+
+pattern <- "^[4-7]\\s*'\\s*\\d{1,2}$"
+str_detect(converted, pattern)
+
+# You can add a none or more space character (\\s*) before and after each word to properly replace the word and any additional spaces with an apostrophe
+```
+
